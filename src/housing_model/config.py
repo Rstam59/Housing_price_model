@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path 
 import yaml 
 
-@dataclass
+@dataclass(frozen=True)
 class TrainConfig:
     csv_path: str
     target: str 
@@ -19,21 +19,22 @@ class ModelConfig:
     n_jobs: int 
 
 
+
 @dataclass(frozen=True)
 class GridConfig:
     enabled: bool 
     cv: int 
-    scoring: str 
+    scoring: str
     param_grid: dict 
 
 
-
-@dataclass
+@dataclass(frozen=True)
 class OutputConfig:
     artifacts_dir: str 
     model_path: str 
     metrics_path: str 
     manifest_path: str 
+
 
 @dataclass
 class AppConfig:

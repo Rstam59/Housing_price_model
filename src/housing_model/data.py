@@ -12,7 +12,10 @@ def load_housing(csv_path: str) -> pd.DataFrame:
         raise ValueError(f'Dataset is empty: {csv_path}')
     return df 
 
-def add_income_cat(df: pd.DataFrame, income_col: str, bins: list[float], labels: list[int]) -> pd.DataFrame:
+def add_income_cat(df: pd.DataFrame, 
+                   income_col: str, 
+                   bins: list[float], 
+                   labels: list[int]) -> pd.DataFrame:
     if income_col not in df.columns:
         raise KeyError(f'Missing stratify column: {income_col}')
     out = df.copy()
@@ -55,5 +58,5 @@ def stratified_split(
     y_test = test_df[target].copy()
 
     logger.info("Split sizes: train=%d test=%d", len(train_df), len(test_df))
-    
+
     return X_train, X_test, y_train, y_test
