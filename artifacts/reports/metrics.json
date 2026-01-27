@@ -1,0 +1,12 @@
+{
+  "rmse": 50298.910756365716,
+  "mae": 32412.080631459947,
+  "r2": 0.8109974911673085,
+  "best_params": {
+    "randomforestregressor__max_depth": null,
+    "randomforestregressor__n_estimators": 300
+  },
+  "best_cv_score": -2557247654.3080387,
+  "sanity_cv_rmse_mean": 50630.633746057014,
+  "sanity_cv_rmse_std": 373.64447930878777
+}

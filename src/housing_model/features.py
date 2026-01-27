@@ -24,5 +24,6 @@ def safe_log1p(X: np.ndarray) -> np.ndarray:
 log_transformer = FunctionTransformer(
     safe_log1p,
     inverse_func= np.expm1,
-    feature_names_out= 'one_to_one'
+    feature_names_out= 'one-to-one'
 )
+

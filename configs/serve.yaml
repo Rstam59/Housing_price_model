@@ -1,0 +1,12 @@
+service:
+  host: 0.0.0.0
+  port: 8000
+
+
+artifacts:
+  model_path: artifacts/models/best_model.joblib
+  training_profile_path: artifacts/reports/training_profile.json
+
+behavior:
+  allow_extra_columns: false
+  strict_categories: false

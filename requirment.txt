@@ -1,0 +1,24 @@
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.12.1
+click==8.3.1
+fastapi==0.128.0
+h11==0.16.0
+-e git+ssh://git@github.com/Rstam59/Housing_price_model.git@f9cf232ebebd19bedf3252d95ed73f1291ae2826#egg=housing_price_model
+-e git+ssh://git@github.com/Rstam59/Housing_price_model.git@f9cf232ebebd19bedf3252d95ed73f1291ae2826#egg=housing_model
+idna==3.11
+joblib==1.5.3
+numpy==2.4.1
+pandas==3.0.0
+pydantic==2.12.5
+pydantic_core==2.41.5
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+scikit-learn==1.8.0
+scipy==1.17.0
+six==1.17.0
+starlette==0.50.0
+threadpoolctl==3.6.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+uvicorn==0.40.0

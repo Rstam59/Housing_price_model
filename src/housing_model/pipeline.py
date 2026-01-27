@@ -52,7 +52,7 @@ def make_model(random_state: int, n_jobs: int):
         n_jobs=n_jobs,
     )
 
-def make_pipeline(random_state: int, n_jobs: int):
+def build_pipeline(random_state: int, n_jobs: int):
     preprocessing = make_preprocessing()
     model = make_model(random_state=random_state, n_jobs=n_jobs)
     return make_pipeline(preprocessing, model)

@@ -3,14 +3,14 @@ import joblib
 from sklearn.model_selection import GridSearchCV, cross_val_score
 
 from .config import AppConfig
-from .pipeline import make_pipeline
+from .pipeline import build_pipeline
 from .evaluate import regression_metrics
 from .io import write_json, ensure_parent
 
 logger = logging.getLogger(__name__)
 
 def train_and_select(cfg: AppConfig, X_train, y_train):
-    pipe = make_pipeline(
+    pipe = build_pipeline(
         random_state=cfg.model.random_state,
         n_jobs=cfg.model.n_jobs,
     )
@@ -27,7 +27,8 @@ def train_and_select(cfg: AppConfig, X_train, y_train):
 
     if not cfg.grid.enabled:
         pipe.fit(X_train, y_train)
-        return pipe, {"cv_rmse_mean": float((-cv_scores).mean()), "cv_rmse_std": float((-cv_scores).std())}
+        return pipe, {"cv_rmse_mean": float((-cv_scores).mean()),
+                      "cv_rmse_std": float((-cv_scores).std())}
 
     gs = GridSearchCV(
         estimator=pipe,

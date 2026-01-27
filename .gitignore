@@ -200,9 +200,18 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-.env.example
+
 
 # Marimo
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# ML artifacts
+artifacts/
+data/
+*.joblib
+*.pkl
+*.pt
+*.onnx

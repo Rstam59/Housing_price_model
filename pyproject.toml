@@ -1,0 +1,18 @@
+[project]
+name = 'housing-price-model'
+version = '0.1.0'
+requires-python = '>=3.10'
+dependencies = [
+    'pandas',
+    'numpy',
+    'scikit-learn',
+    'pyyaml',
+    'joblib'
+]
+
+[project.scripts]
+housing-train = "housing_model.cli:main"
+
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
