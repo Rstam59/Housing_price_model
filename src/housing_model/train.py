@@ -2,6 +2,8 @@ import logging
 import joblib
 from sklearn.model_selection import GridSearchCV, cross_val_score
 
+from housing_model.profiling import build_training_profile
+
 from .config import AppConfig
 from .pipeline import build_pipeline
 from .evaluate import regression_metrics
@@ -27,8 +29,8 @@ def train_and_select(cfg: AppConfig, X_train, y_train):
 
     if not cfg.grid.enabled:
         pipe.fit(X_train, y_train)
-        return pipe, {"cv_rmse_mean": float((-cv_scores).mean()),
-                      "cv_rmse_std": float((-cv_scores).std())}
+        meta = {"cv_rmse_mean": float((-cv_scores).mean()), "cv_rmse_std": float((-cv_scores).std())}
+        return pipe, meta
 
     gs = GridSearchCV(
         estimator=pipe,
@@ -62,8 +64,14 @@ def fit(cfg: AppConfig, X_train, y_train, X_test, y_test) -> dict:
     y_pred = model.predict(X_test)
     metrics = regression_metrics(y_test, y_pred)
 
+    profile = build_training_profile(X_train)
+
     # persist
     save_model(model, cfg.output.model_path)
     write_json(cfg.output.metrics_path, {**metrics, **meta})
+    write_json("artifacts/reports/training_profile.json", profile)
 
-    return {"model_path": cfg.output.model_path, "metrics": metrics, "meta": meta}
+    return {"model_path": cfg.output.model_path,
+            "metrics": metrics, 
+            "meta": meta,
+            "training_profile_path": "artifacts/reports/training_profile.json"}

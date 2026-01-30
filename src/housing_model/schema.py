@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple 
 import pandas as pd 
 
-REQURIED_NUMERIC = [
+REQUIRED_NUMERIC = [
     'longitude',
     'latitude',
     'housing_median_age',
@@ -14,9 +14,9 @@ REQURIED_NUMERIC = [
 ]
 
 
-REQURIED_CATEGORICAL = ['ocean_proximity']
+REQUIRED_CATEGORICAL = ['ocean_proximity']
 
-REQURIED_COLUMNS = REQURIED_NUMERIC + REQURIED_CATEGORICAL
+REQUIRED_COLUMNS = REQUIRED_NUMERIC + REQUIRED_CATEGORICAL
 
 ALLOWED_OCEAN_PROXIMITY = [
     '<1H OCEAN',
@@ -39,8 +39,8 @@ class SchemaError(Exception):
 
 def _missing_and_extra_columns(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
     cols = set(df.columns)
-    missing = [c for c in REQURIED_COLUMNS if c not in cols]
-    extra = [c for c in df.columns if c not in set(REQURIED_COLUMNS)]
+    missing = [c for c in REQUIRED_COLUMNS if c not in cols]
+    extra = [c for c in df.columns if c not in set(REQUIRED_COLUMNS)]
     return missing, extra
 
 
@@ -64,11 +64,11 @@ def validate_dataframe(
     
     out = df.copy()
 
-    for c in REQURIED_NUMERIC: 
+    for c in REQUIRED_NUMERIC: 
         out[c] = pd.to_numeric(out[c], errors='coerce')
 
     bad_numeric = []
-    for c in REQURIED_NUMERIC:
+    for c in REQUIRED_NUMERIC:
         if out[c].isna().all():
             bad_numeric.append(c)
     if bad_numeric:
