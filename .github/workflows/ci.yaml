@@ -37,13 +37,13 @@ jobs:
 
       - name: Run container
         run: |
-          docker run -d --rm --name housing-ci -p 8000:8000 \
+          docker run -d --name housing-ci -p 8000:8000 \
             -e LOG_FORMAT=pretty \
             housing-model:ci
           docker ps -a 
           docker logs housing-ci || true
 
-          
+
       - name: Wait for /health
         run: |
           for i in {1..30}; do
@@ -52,6 +52,7 @@ jobs:
               exit 0
             fi
             echo "Waiting for service..."
+            docker ps -a
             docker logs housing-ci || true
             sleep 1
           done
