@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from housing_model.schema import validate_dataframe, SchemaError, REQUIRED_COLUMNS
+from housing_model.schema import validate_dataframe, SchemaError
 
 def make_good_df():
     return pd.DataFrame([{

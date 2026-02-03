@@ -2,7 +2,6 @@ import argparse
 import logging
 import platform
 import sklearn
-import yaml 
 from pathlib import Path
 
 
@@ -11,7 +10,7 @@ from .config import load_config
 from .data import load_housing, stratified_split
 from .train import fit
 from .io import write_json
-from .versioning import sha256_file, sha256_bytes, sha256_json, short_hash
+from .versioning import sha256_file, sha256_bytes, short_hash
 
 logger = logging.getLogger(__name__)
 
