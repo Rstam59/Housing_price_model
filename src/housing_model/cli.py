@@ -40,23 +40,38 @@ def main():
         random_state = cfg.data.random_state
     )
 
-    result = fit(cfg, X_train, y_train, X_test, y_test)
+
 
     manifest = {
-        'python': platform.python_version(),
-        'sklearn': sklearn.__version__,
-        'config_path': args.config,
-        "config_hash": config_hash,
-        'data_path': cfg.data.csv_path,
-        "data_hash": data_hash,
-        'model_path': result['model_path'],
-        "training_profile_path": result["training_profile_path"],
-        'metrics': result['metrics'],
-        'meta': result['meta'],
+    "run_id": f"{short_hash(config_hash)}_{short_hash(data_hash)}",
+    "python": platform.python_version(),
+    "sklearn": sklearn.__version__,
+    "config_path": args.config,
+    "data_path": cfg.data.csv_path,
+    # these will be filled after fit()
     }
 
-    manifest["run_id"] = f"{short_hash(config_hash)}_{short_hash(data_hash)}"
+    result = fit(
+    cfg,
+    run_id=manifest["run_id"],
+    X_train=X_train,
+    y_train=y_train,
+    X_test=X_test,
+    y_test=y_test,
+    )
+
+    manifest.update(
+    {
+        "model_path": result["model_path"],
+        "metrics_path": result.get("metrics_path"),
+        "training_profile_path": result.get("training_profile_path"),
+        "metrics": result["metrics"],
+        "meta": result["meta"],
+        }
+    )
+
     write_json(cfg.output.manifest_path, manifest)
+
 
     logger.info(
         "Done. run_id=%s Test RMSE=%.4f MAE=%.4f R2=%.4f",

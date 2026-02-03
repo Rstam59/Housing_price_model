@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from .predictor import load_predictor
 from .schema import REQUIRED_COLUMNS, SchemaError, validate_dataframe
+from .registry import ModelRegistry
+from .middleware import RequestIdMiddleware, PayloadLimitMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -32,56 +34,76 @@ def _load_serve_cfg() -> dict:
 async def lifespan(app: FastAPI):
     serve_cfg = _load_serve_cfg()
 
-    model_path = serve_cfg["artifacts"]["model_path"]
+    registry_dir = Path(serve_cfg["artifacts"]["registry_dir"])
     profile_path = serve_cfg["artifacts"].get("training_profile_path")
 
-    pred = load_predictor(model_path=model_path, training_profile_path=profile_path)
+    registry = ModelRegistry(registry_dir)
+    active_model_path = str(registry.resolve_active())
 
+    pred = load_predictor(model_path=active_model_path, training_profile_path=profile_path)
     pred.allow_extra_columns = bool(serve_cfg["behavior"].get("allow_extra_columns", False))
     pred.strict_categories = bool(serve_cfg["behavior"].get("strict_categories", False))
 
     app.state.serve_cfg = serve_cfg
     app.state.predictor = pred
+    app.state.registry = registry
 
-    logger.info("Service started. model=%s profile=%s profile_loaded=%s",
-                model_path, profile_path, "yes" if pred.training_profile else "no")
+    logger.info(
+        "service_started",
+        extra={
+            "path": "startup",
+            "request_id": "system",
+            "status_code": 200,
+            "latency_ms": 0.0,
+        },
+    )
+    logger.info(
+        f"Loaded active model: {active_model_path} profile_loaded={'yes' if pred.training_profile else 'no'}"
+    )
 
     yield
 
-
-    logger.info("Service shutting down.")
+    logger.info("service_shutdown", extra={"path": "shutdown", "request_id": "system"})
 
 
 app = FastAPI(title="Housing Price Model", version="0.1.0", lifespan=lifespan)
 
+# Middlewares 
+serve_cfg = _load_serve_cfg()
+app.add_middleware(RequestIdMiddleware)
+app.add_middleware(
+    PayloadLimitMiddleware,
+    max_body_bytes=int(serve_cfg["limits"]["max_body_bytes"]),
+    max_records=int(serve_cfg["limits"]["max_records"]),
+    path_prefix="/predict",
+)
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
 @app.get("/meta")
 def meta(request: Request):
     serve_cfg = request.app.state.serve_cfg
     pred = request.app.state.predictor
+    active_model = str(request.app.state.registry.resolve_active())
     return {
-        "model_path": serve_cfg["artifacts"]["model_path"],
-        "training_profile_path": serve_cfg["artifacts"].get("training_profile_path"),
+        "active_model_path": active_model,
         "training_profile_loaded": bool(pred.training_profile),
         "allow_extra_columns": pred.allow_extra_columns,
         "strict_categories": pred.strict_categories,
         "required_columns": REQUIRED_COLUMNS,
+        "limits": serve_cfg["limits"],
     }
-
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest, request: Request):
     pred = request.app.state.predictor
+    rid = getattr(request.state, "request_id", "unknown")
 
     t0 = time.time()
     try:
         df = pd.DataFrame(req.records)
-
         df = validate_dataframe(
             df,
             allow_extra_columns=pred.allow_extra_columns,
@@ -89,17 +111,29 @@ def predict(req: PredictRequest, request: Request):
             require_non_empty=True,
         )
         df = df[REQUIRED_COLUMNS]
-
         result = pred.predict_df(df)
-
     except SchemaError as e:
+        logger.warning(
+            "predict_schema_error",
+            extra={"request_id": rid, "path": "/predict", "rows": len(req.records), "status_code": 422},
+        )
         raise HTTPException(status_code=422, detail={"error": str(e), "details": e.details})
     except Exception:
-        logger.exception("Prediction failed")
+        logger.exception("predict_failed", extra={"request_id": rid, "path": "/predict", "status_code": 500})
         raise HTTPException(status_code=500, detail="Internal error")
 
     latency_ms = (time.time() - t0) * 1000.0
-    logger.info("predict_ok rows=%d latency_ms=%.2f", len(req.records), latency_ms)
+    logger.info(
+        "predict_ok",
+        extra={
+            "request_id": rid,
+            "path": "/predict",
+            "method": "POST",
+            "rows": len(req.records),
+            "latency_ms": latency_ms,
+            "status_code": 200,
+        },
+    )
 
     return PredictResponse(
         predictions=result["predictions"],

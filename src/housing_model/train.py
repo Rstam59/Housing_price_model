@@ -9,6 +9,9 @@ from .pipeline import build_pipeline
 from .evaluate import regression_metrics
 from .io import write_json, ensure_parent
 
+from .registry import ModelRegistry
+from pathlib import Path
+
 logger = logging.getLogger(__name__)
 
 def train_and_select(cfg: AppConfig, X_train, y_train):
@@ -57,7 +60,7 @@ def save_model(model, path: str) -> None:
     ensure_parent(path)
     joblib.dump(model, path)
 
-def fit(cfg: AppConfig, X_train, y_train, X_test, y_test) -> dict:
+def fit(cfg: AppConfig, run_id: str, X_train, y_train, X_test, y_test) -> dict:
     model, meta = train_and_select(cfg, X_train, y_train)
 
     # test evaluation
@@ -67,9 +70,9 @@ def fit(cfg: AppConfig, X_train, y_train, X_test, y_test) -> dict:
     profile = build_training_profile(X_train)
 
     # persist
-    save_model(model, cfg.output.model_path)
-    write_json(cfg.output.metrics_path, {**metrics, **meta})
-    write_json("artifacts/reports/training_profile.json", profile)
+    registry = ModelRegistry(Path("artifacts/models/registry"))
+    model_file = registry.save(model, run_id=run_id)     # <-- requires run_id passed in
+    active_link = registry.set_active(run_id)
 
     return {"model_path": cfg.output.model_path,
             "metrics": metrics, 

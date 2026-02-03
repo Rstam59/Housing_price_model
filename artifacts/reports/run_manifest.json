@@ -1,11 +1,11 @@
 {
+  "run_id": "2179cb63a81f_2364609dc48b",
   "python": "3.13.0",
   "sklearn": "1.8.0",
   "config_path": "configs/train.yaml",
-  "config_hash": "2179cb63a81f9e09d02192dc1ec7721e798cad49152d1ecfc4801568c07bf3b6",
   "data_path": "data/raw/housing.csv",
-  "data_hash": "2364609dc48bec7df3ba9dbb7041478e704ecddcee70ef1827ec3fc49d22c0cc",
   "model_path": "artifacts/models/best_model.joblib",
+  "metrics_path": null,
   "training_profile_path": "artifacts/reports/training_profile.json",
   "metrics": {
     "rmse": 50298.910756365716,
@@ -20,6 +20,5 @@
     "best_cv_score": -2557247654.3080387,
     "sanity_cv_rmse_mean": 50630.633746057014,
     "sanity_cv_rmse_std": 373.64447930878777
-  },
-  "run_id": "2179cb63a81f_2364609dc48b"
+  }
 }
