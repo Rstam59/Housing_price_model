@@ -40,7 +40,26 @@ jobs:
           docker run -d --rm --name housing-ci -p 8000:8000 \
             -e LOG_FORMAT=pretty \
             housing-model:ci
-          sleep 2
+          docker ps -a 
+          docker logs housing-ci || true
+
+          
+      - name: Wait for /health
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8000/health > /dev/null; then
+              echo "Service is up"
+              exit 0
+            fi
+            echo "Waiting for service..."
+            docker logs housing-ci || true
+            sleep 1
+          done
+          echo "Service failed to start"
+          docker ps -a
+          docker logs housing-ci || true
+          exit 1
+
 
       - name: Smoke test /health
         run: curl -f http://localhost:8000/health
