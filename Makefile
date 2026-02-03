@@ -1,7 +1,7 @@
 .PHONY: install train serve test docker-build docker-run rollback
 
 install:
-	pip install -e .[dev] || pip install -e .
+	pip install -e .
 
 train:
 	housing-train --config configs/train.yaml
