@@ -32,17 +32,20 @@ jobs:
       - name: Unit tests
         run: pytest -q
 
+      # ✅ Train a model so registry/active exists for the container
+      - name: Train (CI quick)
+        run: |
+          housing-train --config configs/train_ci.yaml
+          ls -la artifacts/models/registry || true
+
       - name: Build Docker image
         run: docker build -t housing-model:ci .
 
       - name: Run container
         run: |
-          docker run -d --name housing-ci -p 8000:8000 \
+          docker run -d --rm --name housing-ci -p 8000:8000 \
             -e LOG_FORMAT=pretty \
             housing-model:ci
-          docker ps -a 
-          docker logs housing-ci || true
-
 
       - name: Wait for /health
         run: |
@@ -57,10 +60,8 @@ jobs:
             sleep 1
           done
           echo "Service failed to start"
-          docker ps -a
           docker logs housing-ci || true
           exit 1
-
 
       - name: Smoke test /health
         run: curl -f http://localhost:8000/health
@@ -82,11 +83,3 @@ jobs:
                 "ocean_proximity": "NEAR BAY"
               }]
             }'
-
-      - name: Show container logs (debug)
-        if: failure()
-        run: docker logs housing-ci || true
-
-      - name: Stop container
-        if: always()
-        run: docker stop housing-ci || true
